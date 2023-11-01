@@ -1,10 +1,10 @@
-CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 pretraining.py \
-    --model_type bloom \
-    --model_name_or_path bigscience/bloomz-560m \
+CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node 1 pretraining.py \
+    --model_type chatglm \
+    --model_name_or_path /opt/chatglm2-6b \
     --train_file_dir ./data/pretrain \
     --validation_file_dir ./data/pretrain \
-    --per_device_train_batch_size 4 \
-    --per_device_eval_batch_size 4 \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 1 \
     --do_train \
     --do_eval \
     --use_peft True \
@@ -12,8 +12,8 @@ CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 pretraining.py \
     --fp16 \
     --max_train_samples 10000 \
     --max_eval_samples 10 \
-    --num_train_epochs 0.5 \
-    --learning_rate 2e-4 \
+    --num_train_epochs 7.0  \
+    --learning_rate 1e-3 \
     --warmup_ratio 0.05 \
     --weight_decay 0.01 \
     --logging_strategy steps \
@@ -31,12 +31,13 @@ CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 pretraining.py \
     --ddp_timeout 30000 \
     --logging_first_step True \
     --target_modules all \
-    --lora_rank 8 \
-    --lora_alpha 16 \
+    --lora_rank 32 \
+    --lora_alpha 32 \
     --lora_dropout 0.05 \
     --torch_dtype float16 \
     --device_map auto \
     --report_to tensorboard \
     --ddp_find_unused_parameters False \
     --gradient_checkpointing True \
+    --load_in_8bit False \
     --cache_dir ./cache

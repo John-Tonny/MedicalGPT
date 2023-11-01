@@ -50,6 +50,8 @@ from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotar
 from transformers.trainer import TRAINING_ARGS_NAME
 from transformers.trainer_pt_utils import LabelSmoother
 
+import pdb
+
 try:
     from transformers.integrations import is_deepspeed_zero3_enabled
 except ImportError:  # https://github.com/huggingface/transformers/releases/tag/v4.33.1
@@ -539,7 +541,7 @@ register_conv_template(
                       "The assistant gives helpful, detailed, and polite answers to the user's questions.",
         messages=[],
         roles=("USER", "ASSISTANT"),
-        prompt="USER: {query} ASSISTANT:",
+        prompt="USER: {query} ASSISTANT: ",
         sep="</s>",
     )
 )
@@ -612,7 +614,6 @@ register_conv_template(
 )
 
 """ChatGLM1 template
-Support: https://huggingface.co/THUDM/chatglm-6b
 source: https://huggingface.co/THUDM/chatglm-6b/blob/main/modeling_chatglm.py#L1307
 """
 register_conv_template(
@@ -627,10 +628,10 @@ register_conv_template(
 )
 
 """ChatGLM2 template
-Support: https://huggingface.co/THUDM/chatglm2-6b
 source: https://huggingface.co/THUDM/chatglm2-6b/blob/main/modeling_chatglm.py#L1007
 """
 register_conv_template(
+    # source:
     Conversation(
         name="chatglm2",
         system_prompt="",
@@ -641,28 +642,11 @@ register_conv_template(
     )
 )
 
-"""ChatGLM3 template
-Support: https://huggingface.co/THUDM/chatglm3-6b
-source: https://huggingface.co/THUDM/chatglm3-6b/blob/main/tokenization_chatglm.py#L179
-"""
-register_conv_template(
-    Conversation(
-        name="chatglm3",
-        system_prompt="",
-        messages=[],
-        roles=("<|user|>", "<|assistant|>"),
-        prompt="<|user|>\n{query}<|assistant|>",
-        sep="\n",
-        stop_str="<|user|>",
-    )
-)
-
 """Phoenix template"""
 register_conv_template(
     Conversation(
         name="phoenix",
-        system_prompt="A chat between a curious human and an artificial intelligence assistant. "
-                      "The assistant gives helpful, detailed, and polite answers to the human's questions.\n\n",
+        system_prompt="A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.\n\n",
         messages=[],
         roles=("Human", "Assistant"),
         prompt="Human: <s>{query}</s>Assistant: ",
@@ -874,7 +858,6 @@ def find_all_linear_names(peft_model, int4=False, int8=False):
 def main():
     parser = HfArgumentParser((ModelArguments, DataArguments, Seq2SeqTrainingArguments, ScriptArguments))
     model_args, data_args, training_args, script_args = parser.parse_args_into_dataclasses()
-
     logger.info(f"Model args: {model_args}")
     logger.info(f"Data args: {data_args}")
     logger.info(f"Training args: {training_args}")

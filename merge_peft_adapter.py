@@ -72,6 +72,8 @@ def main():
         )
     else:
         print("Loading LoRA for causal language model")
+        print(model_class)
+        print(tokenizer_class)
         base_model = model_class.from_pretrained(
             base_model_path,
             load_in_8bit=False,

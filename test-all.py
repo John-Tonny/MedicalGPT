@@ -63,10 +63,9 @@ def stream_generate_answer(
         repetition_penalty=repetition_penalty,
         streamer=streamer,
     )
-
     thread = Thread(target=model.generate, kwargs=generation_kwargs)
     thread.start()
-    
+
     generated_text = ""
     for new_text in streamer:
         stop = False
@@ -143,12 +142,9 @@ def main():
     parser.add_argument('--only_cpu', action='store_true', help='only use CPU for inference')
     parser.add_argument('--load_in_4bit', default=None, type=str,  help='load in 4bit or 8bit or None')
     parser.add_argument('--history', default=0, type=int,  help='history length')
-
     args = parser.parse_args()
     print(args)
-
     hlen = args.history
-
     if args.only_cpu is True:
         args.gpus = ""
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
@@ -159,10 +155,9 @@ def main():
         device = torch.device('cpu')
     if args.tokenizer_path is None:
         args.tokenizer_path = args.base_model
-    
+
     model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_path, trust_remote_code=True, padding_side='left')
-
     base_mode = None
     load_in_4bit = args.load_in_4bit.lower()
     if load_in_4bit=='none':
@@ -232,89 +227,64 @@ def main():
 
     if args.interactive:
         print("Welcome to the CLI application, use `clear` to remove the history, use `exit` to exit the application.")
+        
+        infile='./data/finetune/train-jlw.jsonl'
+        outfile='./debug.log'
+        
         history = []
-        while True:
-            try:
-                query = input(f"{prompt_template.roles[0]}: ")
-            except UnicodeDecodeError:
-                print("Detected decoding error at the inputs, please try again.")
-                continue
-            except Exception:
-                raise
-            if query == "":
-                print("Please input text, try again.")
-                continue
-            if query.strip() == "exit":
-                print("exit...")
-                break
-            if query.strip() == "clear":
-                history = []
-                print("history cleared.")
-                continue
+        fo=open(outfile, 'w')
+        i=1
+        pdb.set_trace()
+        with open(infile, 'r') as f:
+            line = f.readline()
+            while line:
+                result = json.loads(line.strip())
+                query = result['conversations'][0]['value']
+                print(str(i) + '、 ' + query)
+                i = i +1
 
-            print(f"{prompt_template.roles[1]}: ", end="", flush=True)
-    
-            if hlen == 0:
-                history = []
-            else:
-                hlength = len(history)
-                if hlength>=hlen:
-                    history =history[-hlen:]
+                j=0
+                while j<1:
+                    fo.write(str(i) + '、 ' + query + '\n')
+                    
+                    #pdb.set_trace()
 
-            history.append([query, ''])
-            prompt = prompt_template.get_prompt(messages=history)
+                    if hlen == 0:
+                        history = []
+                    else:
+                        hlength = len(history)
+                        if hlength>=hlen:
+                            history =history[-hlen:]
 
-            print("history:", history)
-            print("##########\n")
+                    history.append([query, ''])
+                    #print("history:", history)
 
-            response = stream_generate_answer(
-                model,
-                tokenizer,
-                prompt,
-                device,
-                do_print=True,
-                max_new_tokens=args.max_new_tokens,
-                temperature=args.temperature,
-                repetition_penalty=args.repetition_penalty,
-                stop_str=stop_str,
-            )
-            if history:
-                history[-1][-1] = response.strip()
-    else:
-        print("Start inference.")
-        counts = 0
-        if os.path.exists(args.output_file):
-            os.remove(args.output_file)
-        eval_batch_size = args.eval_batch_size
-        for batch in tqdm(
-                [
-                    examples[i: i + eval_batch_size]
-                    for i in range(0, len(examples), eval_batch_size)
-                ],
-                desc="Generating outputs",
-        ):
-            responses = batch_generate_answer(
-                batch,
-                model,
-                tokenizer,
-                prompt_template,
-                device,
-                max_new_tokens=args.max_new_tokens,
-                temperature=args.temperature,
-                repetition_penalty=args.repetition_penalty,
-            )
-            results = []
-            for example, response in zip(batch, responses):
-                print(f"===")
-                print(f"Input: {example}")
-                print(f"Output: {response}\n")
-                results.append({"Input": example, "Output": response})
-                counts += 1
-            with open(args.output_file, 'a', encoding='utf-8') as f:
-                for entry in results:
-                    json.dump(entry, f, ensure_ascii=False)
-                    f.write('\n')
-        print(f'save to {args.output_file}, size: {counts}')
+                    prompt = prompt_template.get_prompt(messages=history)
+
+                    response = stream_generate_answer(
+                        model,
+                        tokenizer,
+                        prompt,
+                        device,
+                        do_print=False,
+                        max_new_tokens=args.max_new_tokens,
+                        temperature=args.temperature,
+                        repetition_penalty=args.repetition_penalty,
+                        stop_str=stop_str,
+                    )
+                    if history:
+                        history[-1][-1] = response.strip()
+
+                    #history = []
+                    print(response)
+                    print("\n#########\n")
+                    fo.write(response + '\n')
+                    fo.write("#########\n")
+                    j+=1
+
+                line = f.readline()
+
+        fo.close()
 
 
 if __name__ == '__main__':

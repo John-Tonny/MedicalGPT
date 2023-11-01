@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node 1 supervised_finetuning.py \
     --do_eval True \
     --use_peft True \
     --fp16 True \
-    --max_train_samples 10000 \
+    --max_train_samples 1000 \
     --max_eval_samples 10 \
     --num_train_epochs 12 \
     --learning_rate 1e-3 \
@@ -25,7 +25,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node 1 supervised_finetuning.py \
     --save_total_limit 3 \
     --gradient_accumulation_steps 1 \
     --preprocessing_num_workers 1 \
-    --output_dir outputs-sft-bloom-v1 \
+    --output_dir outputs-sft-bloom-v2 \
     --overwrite_output_dir True \
     --ddp_timeout 30000 \
     --logging_first_step True \
@@ -40,7 +40,9 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node 1 supervised_finetuning.py \
     --gradient_checkpointing True \
     --lr_scheduler_type linear \
     --qlora True \
-    --load_in_4bit True \
+    --load_in_4bit False \
     --optim paged_adamw_32bit \
+    --max_train_samples -1 \
+    --deepspeed deepspeed_zero_stage2_config.json \
     --cache_dir ./cache
 

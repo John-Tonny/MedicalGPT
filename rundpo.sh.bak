@@ -26,5 +26,6 @@ CUDA_VISIBLE_DEVICES=0 python dpo_training.py \
     --report_to tensorboard \
     --remove_unused_columns False \
     --gradient_checkpointing True \
-    --load_in_4bit False \
+    --load_in_4bit True \
+    #--deepspeed deepspeed_zero_stage3_config.json \
     --cache_dir ./cache

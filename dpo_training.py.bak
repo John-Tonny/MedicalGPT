@@ -452,6 +452,49 @@ def main():
     else:
         model.config.use_cache = True
 
+    ds_config = {
+        "train_micro_batch_size_per_gpu": 4,
+        "optimizer": {
+            "type": "Adam",
+            "params": {
+                "lr": 1e-4
+            }
+        },
+        "fp16":{
+            "enabled": True
+        }
+    }
+
+    optimizer_grouped_parameters = get_optimizer_grouped_parameters(model, args.weight_decay)
+    AdamOptimizer = DeepSpeedCPUAdam
+    optimizer = AdamOptimizer(optimizer_grouped_parameters,
+                              lr=args.learning_rate,
+                              betas=(0.9, 0.95))
+
+
+    lr_scheduler = get_scheduler(
+        name='linear',
+        optimizer=optimizer,
+        num_warmup_steps=5,
+        num_training_steps=15*2,
+    )
+
+    model, optimizer, _, lr_scheduler = deepspeed.initialize(
+        model=model,
+        optimizer=optimizer,
+        args=args,
+        config=ds_config,
+        lr_scheduler=lr_scheduler,
+        dist_init_required=True)
+
+
+    model_engine, optimizer, _, _ = deepspeed.init_inference(model,
+                                 mp_size=1,
+                                 dtype=torch.int8,
+                                 replace_method='auto',
+                                 quantization_setting=8)
+
+
     training_args = TrainingArguments(
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
@@ -472,7 +515,6 @@ def main():
         fp16=args.fp16,
         remove_unused_columns=args.remove_unused_columns,
         run_name=f"dpo_{args.model_type}",
-        #deepspeed="deepspeed_zero_stage2_config.json", 
     )
 
     # Initialize DPO trainer
@@ -495,7 +537,7 @@ def main():
         logger.info("Fine-tuning method: Full parameters training")
     trainer = DPOTrainer(
         model,
-        #ref_model=deepcopy(model),  #tonny
+        ref_model=deepcopy(model),
         args=training_args,
         beta=args.beta,
         train_dataset=train_dataset,

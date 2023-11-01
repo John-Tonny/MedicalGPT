@@ -127,3 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+debug.log.bak
+debug.log
+predictions_result.jsonl
+predictions_result.jsonl.bak
+nohup.out
+/node_modules
+/bak
+/build
+/cache
+/flagged
+

@@ -25,7 +25,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node 1 supervised_finetuning.py \
     --save_total_limit 3 \
     --gradient_accumulation_steps 1 \
     --preprocessing_num_workers 1 \
-    --output_dir outputs-sft-bloom-v1 \
+    --output_dir outputs-sft-bloom-v2-4bit \
     --overwrite_output_dir True \
     --ddp_timeout 30000 \
     --logging_first_step True \

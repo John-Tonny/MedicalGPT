@@ -1,21 +1,21 @@
-CUDA_VISIBLE_DEVICES=0 python dpo_training.py \
+python dpo_training.py \
     --model_type chatglm \
-    --model_name_or_path /opt/chatglm2-6b \
+    --model_name_or_path exportmodel-sft-4bit \
     --train_file_dir ./data/reward \
     --validation_file_dir ./data/reward \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
-    --do_train \
-    --do_eval \
+    --do_train True \
+    --do_eval True \
     --use_peft True \
-    --max_train_samples 1000 \
+    --max_train_samples 10000 \
     --max_eval_samples 10 \
     --max_steps 100 \
     --eval_steps 20 \
     --save_steps 50 \
     --max_source_length 128 \
     --max_target_length 128 \
-    --output_dir outputs-dpo-bloom-v1 \
+    --output_dir outputs-dpo-bloom-v2 \
     --target_modules all \
     --lora_rank 8 \
     --lora_alpha 16 \
